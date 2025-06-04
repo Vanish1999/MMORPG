@@ -6,9 +6,14 @@ using UnityEngine.AI;
 
 public class Player : NetworkBehaviour
 {
+    [Header("Move")]
     public LayerMask groundLayer;
     public GameObject Mouseposition;
     public NavMeshAgent agent;
+    [Header("Anim")]
+    public Animator animatorPlayer;
+
+    private GameObject tarNow;
     // Start is called before the first frame update
 
     public override void OnStartLocalPlayer()
@@ -25,7 +30,10 @@ public class Player : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        Move();
+        if (isLocalPlayer)
+        {
+            Move();
+        }
     }
 
     public void Move()
@@ -35,8 +43,22 @@ public class Player : NetworkBehaviour
             Vector3 pos = RayPosition();
             if (pos != Vector3.zero)
             {
-                Instantiate(Mouseposition,pos,Quaternion.identity);
+                if(tarNow != null)
+                    {
+                        Destroy(tarNow);
+                    }
+                tarNow = Instantiate(Mouseposition,pos,Quaternion.identity);
                 agent.SetDestination(pos);
+                CmdSetAnimBool("IsRun", true);
+            }
+        }
+
+        if (tarNow != null)
+        {
+            if(Vector3.Distance(transform.position, tarNow.transform.position) <= 1.0f)
+            {
+                Destroy (tarNow);
+                CmdSetAnimBool("IsRun", false);
             }
         }
     }
@@ -59,5 +81,18 @@ public class Player : NetworkBehaviour
         {
             return Vector3.zero;
         }
+    }
+
+    [Command]
+    public void CmdSetAnimBool(string name, bool value)
+    {
+        RpcSetAnimBool(name, value);
+        animatorPlayer.SetBool(name, value);
+    }
+
+    [ClientRpc]
+    public void RpcSetAnimBool(string name, bool value)
+    {
+        animatorPlayer.SetBool(name, value);
     }
 }

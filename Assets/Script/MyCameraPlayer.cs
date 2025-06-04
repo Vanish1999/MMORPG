@@ -5,31 +5,30 @@ using UnityEngine;
 public class MyCameraPlayer : MonoBehaviour
 {
     public GameObject player;
-    public float yNow;
-    public float yTarget;
+    public Vector3 yNow;
+    public Vector3 yTarget;
     void Start()
     {
-        yTarget= player.transform.position.y;
-        yNow = yTarget;
+        if(player != null)
+        {
+            yTarget = player.transform.position;
+            yNow = yTarget;
+        }
+        
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (player != null)
         {
-            yTarget = player.transform.position.y;
-            if (Mathf.Abs(yTarget-yNow)> 3f)
-            {
-                transform.position = new Vector3(player.transform.position.x,
-                yTarget, transform.position.z);
-                yNow = yTarget;
-            }
-            else
-            {
-                transform.position = new Vector3(player.transform.position.x,
-                yNow, transform.position.z);
-            }
+            yTarget = player.transform.position;
+
+            yNow.x = Mathf.Lerp(yNow.x, yTarget.x, 0.1f);
+            yNow.y = Mathf.Lerp(yNow.y, yTarget.y, 0.1f);
+            yNow.z = Mathf.Lerp(yNow.z, yTarget.z, 0.1f);
+
+            transform.position = yNow;
+            
         }
     }
 }
