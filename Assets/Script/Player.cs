@@ -12,9 +12,16 @@ public class Player : NetworkBehaviour
     public NavMeshAgent agent;
     [Header("Anim")]
     public Animator animatorPlayer;
+    [Header("Plane")]
+    public GameObject plane1;
+    public GameObject plane2;
+    [Header("Attack")]
+    public LayerMask attackLayer;
+    private bool isAttack = false;
 
     private GameObject tarNow;
-    // Start is called before the first frame update
+    private GameObject tarAttack;
+    
 
     public override void OnStartLocalPlayer()
     {
@@ -24,7 +31,10 @@ public class Player : NetworkBehaviour
 
     void Start()
     {
-        
+        if (isLocalPlayer)
+        {
+            SetPlane();
+        }
     }
 
     // Update is called once per frame
@@ -33,12 +43,24 @@ public class Player : NetworkBehaviour
         if (isLocalPlayer)
         {
             Move();
+            Attack();
         }
+    }
+
+    public void SetPlane()
+    {
+        plane1.SetActive(true); 
+        plane2.SetActive(false);
     }
 
     public void Move()
     {
-        if (Input.GetMouseButton(1))
+        if (isAttack)
+        {
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(1))
         {
             Vector3 pos = RayPosition();
             if (pos != Vector3.zero)
@@ -62,6 +84,33 @@ public class Player : NetworkBehaviour
             }
         }
     }
+
+    public  void Attack()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            GameObject tar = RayAttack();
+            if (tar != null)
+            {
+                if (tarAttack != null)
+                {
+                    tarAttack.GetComponent<Enemy1>().DonotChoose();
+                }
+                tarAttack = tar;
+                tarAttack.GetComponent<Enemy1>().BeChoose();
+
+                if (Vector3.Distance(transform.position,tar.transform.position) <= 2.0f)
+                {
+                    transform.rotation = Quaternion.LookRotation(tar.transform.position - transform.position);
+                    isAttack = true;
+                    CmdSetAnimTrigger("Attack");
+                    Invoke("RestisAttack", 1.0f);
+                }
+            }
+        }
+
+    }
+
     public Vector3 RayPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -83,6 +132,19 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public GameObject RayAttack()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Physics.Raycast(ray, out RaycastHit hit, 1000.0f, attackLayer);
+        if (hit.collider != null)
+        {
+            return hit.collider.gameObject;
+        }
+        else
+        {
+            return null;
+        }
+    }
     [Command]
     public void CmdSetAnimBool(string name, bool value)
     {
@@ -94,5 +156,22 @@ public class Player : NetworkBehaviour
     public void RpcSetAnimBool(string name, bool value)
     {
         animatorPlayer.SetBool(name, value);
+    }
+    [Command]
+    public void CmdSetAnimTrigger(string name)
+    {
+        RpcSetAnimTrigger(name);
+        animatorPlayer.SetTrigger(name);
+    }
+
+    [ClientRpc]
+    public void RpcSetAnimTrigger(string name)
+    {
+        animatorPlayer.SetTrigger(name);
+    }
+
+    public void RestisAttack()
+    {
+        isAttack = false;
     }
 }
