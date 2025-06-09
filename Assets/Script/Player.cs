@@ -18,6 +18,10 @@ public class Player : NetworkBehaviour
     [Header("Attack")]
     public LayerMask attackLayer;
     private bool isAttack = false;
+    public Transform attackTransform1;
+    public GameObject attackBox;
+    [Header("PlayerState")]
+    public float ATK = 100;
 
     private GameObject tarNow;
     private GameObject tarAttack;
@@ -94,16 +98,17 @@ public class Player : NetworkBehaviour
             {
                 if (tarAttack != null)
                 {
-                    tarAttack.GetComponent<Enemy1>().DonotChoose();
+                    tarAttack.GetComponent<EnemyBase>().DonotChoose();
                 }
                 tarAttack = tar;
-                tarAttack.GetComponent<Enemy1>().BeChoose();
+                tarAttack.GetComponent<EnemyBase>().BeChoose();
 
                 if (Vector3.Distance(transform.position,tar.transform.position) <= 2.0f)
                 {
                     transform.rotation = Quaternion.LookRotation(tar.transform.position - transform.position);
                     isAttack = true;
                     CmdSetAnimTrigger("Attack");
+                    Invoke("CmdCreatAttackBox", 0.7f);
                     Invoke("RestisAttack", 1.0f);
                 }
             }
@@ -144,7 +149,19 @@ public class Player : NetworkBehaviour
         {
             return null;
         }
+
     }
+
+    [Command]
+    public void CmdCreatAttackBox()
+    {
+        GameObject go = Instantiate(attackBox, attackTransform1.position, attackTransform1.rotation);
+        PlayerAttackBox attackBoxScript = go.GetComponent<PlayerAttackBox>();
+        attackBoxScript.player = gameObject;
+        attackBoxScript.damage = ATK;
+    }
+
+
     [Command]
     public void CmdSetAnimBool(string name, bool value)
     {
