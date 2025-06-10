@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI;
 using Mirror;
 
 public class EnemyBase : NetworkBehaviour
@@ -13,8 +14,12 @@ public class EnemyBase : NetworkBehaviour
     public float ATK = 0;
     public float HP = 100;
     public float DEF = 10;
+    public bool CanMoveAndAttack = false;
     [Header("EnemyPendant")]
     public Slider HPBar;
+    [Header("EnemyMove")]
+    public GameObject target;
+    public NavMeshAgent agent;
 
     [SyncVar(hook =nameof(HPBarUpdate))]
     public float HPNow;
@@ -28,6 +33,10 @@ public class EnemyBase : NetworkBehaviour
     // Update is called once per frame
     public virtual void Update()
     {
+        if (CanMoveAndAttack)
+        {
+            Move();
+        }
 
     }
 
@@ -46,10 +55,19 @@ public class EnemyBase : NetworkBehaviour
     {
         HPNow = Mathf.Max(0, HPNow  - Mathf.Max(0, (damage - DEF)));
         HPBarUpdate(0,0);
+        target = hitGO;
     }
 
     public virtual void HPBarUpdate(float HPold, float HPnow)
     {
         HPBar.value = HPNow / HP;
+    }
+
+    public virtual void Move()
+    {
+        if(target != null)
+        {
+            agent.SetDestination(target.transform.position);
+        }
     }
 }
