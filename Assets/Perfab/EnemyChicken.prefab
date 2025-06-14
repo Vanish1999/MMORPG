@@ -513,7 +513,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3733190950271420136, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
       propertyPath: m_RootOrder
-      value: 18
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3733190950271420136, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -559,6 +559,18 @@ PrefabInstance:
       propertyPath: _assetId
       value: 2183423250
       objectReference: {fileID: 0}
+    - target: {fileID: 5098645364087590561, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098645364087590561, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6460013806549843948, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
+      propertyPath: m_StoppingDistance
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7696147992468300121, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
     m_RemovedGameObjects:
@@ -571,6 +583,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2916958498186337244, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1138335300617543668}
+    - targetCorrespondingSourceObject: {fileID: 2916958498186337244, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8862375702988422135}
   m_SourcePrefab: {fileID: 100100000, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}
 --- !u!1 &2812367105716174775 stripped
 GameObject:
@@ -627,7 +642,43 @@ MonoBehaviour:
   HPBar: {fileID: 6077553360017693990}
   target: {fileID: 0}
   agent: {fileID: 2906260482571237508}
+  animatorEnemy: {fileID: 9130412074374469763}
+  enemyType: 0
   HPNow: 0
+--- !u!114 &8862375702988422135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6451572058590043316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  target: {fileID: 4773109398745497984}
+  syncPosition: 1
+  syncRotation: 1
+  syncScale: 0
+  onlySyncOnChange: 1
+  compressRotation: 1
+  interpolatePosition: 1
+  interpolateRotation: 1
+  interpolateScale: 1
+  coordinateSpace: 0
+  timelineOffset: 1
+  showGizmos: 0
+  showOverlay: 0
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+  onlySyncOnChangeCorrectionMultiplier: 2
+  useFixedUpdate: 0
+  rotationSensitivity: 0.01
+  positionPrecision: 0.01
+  scalePrecision: 0.01
 --- !u!1 &8715216750372993903 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 648839007750880263, guid: 435868bd500246040b5fc92a29ee4bbd, type: 3}

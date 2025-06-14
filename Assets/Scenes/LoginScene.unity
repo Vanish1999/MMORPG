@@ -306,6 +306,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1597166971 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 351499841986415491, guid: 942f050e428753f4f91d5f79548f6626, type: 3}
+  m_PrefabInstance: {fileID: 2987572128269382015}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2987572128269382015
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -314,6 +325,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3018379683925715049, guid: 942f050e428753f4f91d5f79548f6626, type: 3}
+      propertyPath: transport
+      value: 
+      objectReference: {fileID: 1597166971}
     - target: {fileID: 3018379683925715049, guid: 942f050e428753f4f91d5f79548f6626, type: 3}
       propertyPath: 'spawnPrefabs.Array.data[1]'
       value: 
