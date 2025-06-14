@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.AI;
 using Mirror;
+using Unity.VisualScripting;
 
 public enum EnemyType
 {
@@ -30,6 +31,14 @@ public class EnemyBase : NetworkBehaviour
     public bool hasTarget = false;
     [Header("EnemyState")]
     public EnemyType enemyType = EnemyType.Idle;
+    public float AttackDistance = 1.5f;
+    public float TrackingDistance = 20.0f;
+    [Header("EnemyAttack")]
+    public bool doAttack = false;
+    public float AttackCoolTime = 1.0f;
+    public float AttackDamageTime = 0.5f;
+    public GameObject attackBox;
+    public Transform attackTransform1;
 
     [SyncVar(hook =nameof(HPBarUpdate))]
     public float HPNow;
@@ -113,19 +122,48 @@ public class EnemyBase : NetworkBehaviour
     public virtual void EnemyTypeMoveUpdate()
     {
         agent.SetDestination(target.transform.position);
+
+        if(Vector3.Distance(transform.position, target.transform.position) <= AttackDistance)
+        {
+            SwitchState(EnemyType.Attack);
+        }
+        else if(Vector3.Distance(transform.position, target.transform.position) >= TrackingDistance)
+        {
+            SwitchState(EnemyType.Idle);
+            agent.SetDestination(transform.position);
+            HPNow = HP;
+            target = null;
+            hasTarget = false;
+        }
     }
     public virtual void EnemyTypeMoveEnd()
     {
-        
+        CmdSetAnimBool("IsRun", false);
     }
     //Attack
     public virtual void EnemyTypeAttackStart()
     {
-
+       
     }
     public virtual void EnemyTypeAttackUpdate()
     {
+        if (!doAttack && (Vector3.Distance(transform.position, target.transform.position) <= AttackDistance))
+        {
+            doAttack = true;
+            CmdSetAnimTrigger("Attack");
 
+            transform.rotation = Quaternion.Euler(transform.rotation.x,
+                (Quaternion.LookRotation(target.transform.position - transform.position)).eulerAngles.y, 
+                transform.rotation.z);
+
+            Invoke("CreatAttackBox", AttackDamageTime);
+
+            Invoke("RestDoAttack", AttackCoolTime);
+        } 
+        else if (!doAttack && Vector3.Distance(transform.position,target.transform.position)> AttackDistance)
+        {
+            SwitchState(EnemyType.Idle);
+        }
     }
     public virtual void EnemyTypeAttackEnd()
     {
@@ -181,7 +219,6 @@ public class EnemyBase : NetworkBehaviour
                 { EnemyTypeDeadStart(); }
                 break;
         }
-
     }
 
     public void BeChoose()
@@ -195,6 +232,10 @@ public class EnemyBase : NetworkBehaviour
         plane2.SetActive(false);
     }
 
+    public void RestDoAttack()
+    {
+        doAttack = false;
+    }
 
     public virtual void GetHit(float damage, GameObject hitGO)
     {
@@ -221,6 +262,13 @@ public class EnemyBase : NetworkBehaviour
         }
     }
 
+    public virtual void CreatAttackBox()
+    {
+        GameObject go = Instantiate(attackBox, attackTransform1.position, attackTransform1.rotation);
+        EnemyAttackBox attackBoxScript = go.GetComponent<EnemyAttackBox>();
+        attackBoxScript.enemy = gameObject;
+        attackBoxScript.damage = ATK;
+    }
 
     public void CmdSetAnimBool(string name, bool value)
     {

@@ -22,6 +22,11 @@ public class Player : NetworkBehaviour
     public GameObject attackBox;
     [Header("PlayerState")]
     public float ATK = 100;
+    public float HP = 1000;
+    public float DEF = 10;
+
+    [SyncVar]
+    public float HPNow;
 
     private GameObject tarNow;
     private GameObject tarAttack;
@@ -39,6 +44,7 @@ public class Player : NetworkBehaviour
         {
             SetPlane();
         }
+        HPNow = HP;
     }
 
     // Update is called once per frame
@@ -49,6 +55,12 @@ public class Player : NetworkBehaviour
             Move();
             Attack();
         }
+    }
+
+    public virtual void GetHit(float damage, GameObject hitGO)
+    {
+        HPNow = Mathf.Max(0, HPNow - Mathf.Max(0, (damage - DEF)));
+        Debug.Log("PlayerHPNow : " + HPNow);
     }
 
     public void SetPlane()
@@ -105,7 +117,10 @@ public class Player : NetworkBehaviour
 
                 if (Vector3.Distance(transform.position,tar.transform.position) <= 2.0f)
                 {
-                    transform.rotation = Quaternion.LookRotation(tar.transform.position - transform.position);
+                    transform.rotation = Quaternion.Euler(transform.rotation.x,
+                        (Quaternion.LookRotation(tar.transform.position - transform.position)).eulerAngles.y,
+                        transform.rotation.z);
+
                     isAttack = true;
                     CmdSetAnimTrigger("Attack");
                     Invoke("CmdCreatAttackBox", 0.7f);
