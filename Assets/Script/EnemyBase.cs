@@ -39,6 +39,14 @@ public class EnemyBase : NetworkBehaviour
     public float AttackDamageTime = 0.5f;
     public GameObject attackBox;
     public Transform attackTransform1;
+    [Header("EnemyDead")]
+    public float DeadTime = 1.0f;
+    public GameObject planeAndPosition;
+    public GameObject enemyModel;
+    public CharacterController characterController;
+    [Header("EnemyResurrection")]
+    public float ResurrectionTime = 10.0f;
+    private Vector3 resurrectionPosition;
 
     [SyncVar(hook =nameof(HPBarUpdate))]
     public float HPNow;
@@ -53,6 +61,7 @@ public class EnemyBase : NetworkBehaviour
             if (CanMoveAndAttack)
             {
                 EnemyTypeIdleStart();
+                resurrectionPosition = transform.position;
             }
         }
     }
@@ -172,6 +181,13 @@ public class EnemyBase : NetworkBehaviour
     //Dead
     public virtual void EnemyTypeDeadStart()
     {
+        target = null;
+        hasTarget = false;
+        agent.SetDestination(transform.position);
+        CmdSetAnimBool("IsDead", true);
+        CancelInvoke("CreatAttackBox");
+        Invoke("CmdDeadSetFalse", DeadTime);
+        Invoke("ResurrectionFun", ResurrectionTime);
 
     }
     public virtual void EnemyTypeDeadUpdate()
@@ -180,7 +196,7 @@ public class EnemyBase : NetworkBehaviour
     }
     public virtual void EnemyTypeDeadEnd()
     {
-
+        CmdResurrectionSetTrue();
     }
 
     public virtual void SwitchState(EnemyType newenemyType)
@@ -221,6 +237,24 @@ public class EnemyBase : NetworkBehaviour
         }
     }
 
+    public virtual void DeadSetFalse()
+    {
+        planeAndPosition.SetActive(false);
+        enemyModel.SetActive(false );
+        characterController.enabled = false;
+        agent.enabled = false;
+    }
+
+    public virtual void ResurrectionSetTrue()
+    {
+        planeAndPosition.SetActive(true);
+        enemyModel.SetActive(true);
+        characterController.enabled = true;
+        agent.enabled = true;
+        HPNow = HP;
+        HPBar.value = HPNow / HP;
+    }
+
     public void BeChoose()
     {
         plane1.SetActive(false);
@@ -241,6 +275,10 @@ public class EnemyBase : NetworkBehaviour
     {
         HPNow = Mathf.Max(0, HPNow  - Mathf.Max(0, (damage - DEF)));
         HPBarUpdate(0,0);
+
+        if(HPNow<= 0)
+        { SwitchState(EnemyType.Dead);}
+
         if (hitGO.GetComponent<Player>())
         {
             target = hitGO;
@@ -251,6 +289,11 @@ public class EnemyBase : NetworkBehaviour
     public virtual void HPBarUpdate(float HPold, float HPnow)
     {
         HPBar.value = HPNow / HP;
+    }
+
+    public virtual void ResurrectionFun()
+    {
+        SwitchState(EnemyType.Idle);
     }
 
     public virtual void Move()
@@ -269,6 +312,7 @@ public class EnemyBase : NetworkBehaviour
         attackBoxScript.enemy = gameObject;
         attackBoxScript.damage = ATK;
     }
+
 
     public void CmdSetAnimBool(string name, bool value)
     {
@@ -290,5 +334,27 @@ public class EnemyBase : NetworkBehaviour
     public void RpcSetAnimTrigger(string name)
     {
         animatorEnemy.SetTrigger(name);
+    }
+
+    public void CmdDeadSetFalse()
+    {
+        DeadSetFalse();
+        RpcDeadSetFalse();
+    }
+    [ClientRpc]
+    public void RpcDeadSetFalse()
+    {
+        DeadSetFalse();
+    }
+
+    public void CmdResurrectionSetTrue()
+    {
+        ResurrectionSetTrue();
+        RpcResurrectionSetTrue();
+    }
+    [ClientRpc]
+    public void RpcResurrectionSetTrue()
+    {
+        ResurrectionSetTrue();
     }
 }

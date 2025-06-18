@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Player : NetworkBehaviour
 {
@@ -20,12 +21,14 @@ public class Player : NetworkBehaviour
     private bool isAttack = false;
     public Transform attackTransform1;
     public GameObject attackBox;
+    public GameObject HPSlider;
+    public GameObject HPOtherClientSlider;
     [Header("PlayerState")]
     public float ATK = 100;
     public float HP = 1000;
     public float DEF = 10;
 
-    [SyncVar]
+    [SyncVar(hook = nameof(HPBarUpdate))]
     public float HPNow;
 
     private GameObject tarNow;
@@ -43,8 +46,11 @@ public class Player : NetworkBehaviour
         if (isLocalPlayer)
         {
             SetPlane();
+            HPSlider = GameObject.FindGameObjectWithTag("HPSlider");
+            HPOtherClientSlider.SetActive(false);
         }
         HPNow = HP;
+        HPBarUpdate(0, 0);
     }
 
     // Update is called once per frame
@@ -60,7 +66,7 @@ public class Player : NetworkBehaviour
     public virtual void GetHit(float damage, GameObject hitGO)
     {
         HPNow = Mathf.Max(0, HPNow - Mathf.Max(0, (damage - DEF)));
-        Debug.Log("PlayerHPNow : " + HPNow);
+        HPBarUpdate(0, 0);
     }
 
     public void SetPlane()
@@ -183,7 +189,6 @@ public class Player : NetworkBehaviour
         RpcSetAnimBool(name, value);
         animatorPlayer.SetBool(name, value);
     }
-
     [ClientRpc]
     public void RpcSetAnimBool(string name, bool value)
     {
@@ -195,7 +200,6 @@ public class Player : NetworkBehaviour
         RpcSetAnimTrigger(name);
         animatorPlayer.SetTrigger(name);
     }
-
     [ClientRpc]
     public void RpcSetAnimTrigger(string name)
     {
@@ -205,5 +209,17 @@ public class Player : NetworkBehaviour
     public void RestisAttack()
     {
         isAttack = false;
+    }
+
+    public void HPBarUpdate(float HPold, float HPnow)
+    {
+        if (HPSlider)
+        { 
+            HPSlider.GetComponent<Slider>().value = HPNow / HP; 
+        }
+        if (HPOtherClientSlider)
+        {
+            HPOtherClientSlider.GetComponent<Slider>().value = HPNow / HP;
+        }
     }
 }

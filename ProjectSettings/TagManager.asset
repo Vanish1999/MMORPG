@@ -6,6 +6,7 @@ TagManager:
   tags:
   - NotMoveLayer
   - PlayerAttackBox
+  - HPSlider
   layers:
   - Default
   - TransparentFX
