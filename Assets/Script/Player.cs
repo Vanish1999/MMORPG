@@ -27,6 +27,13 @@ public class Player : NetworkBehaviour
     public float ATK = 100;
     public float HP = 1000;
     public float DEF = 10;
+    [Header("PlayerVFX")]
+    public ParticleSystem attackVFX;
+    public float attackVFXInvokeTime = 0f;
+    [Header("PlayerSound")]
+    public AudioSource audioSource;
+    public AudioClip attackSound;
+    public float attackSoundInvokeTime = 0f;
 
     [SyncVar(hook = nameof(HPBarUpdate))]
     public float HPNow;
@@ -109,7 +116,7 @@ public class Player : NetworkBehaviour
 
     public  void Attack()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !isAttack)
         {
             GameObject tar = RayAttack();
             if (tar != null)
@@ -123,14 +130,21 @@ public class Player : NetworkBehaviour
 
                 if (Vector3.Distance(transform.position,tar.transform.position) <= 2.0f)
                 {
+                    isAttack = true;
+
                     transform.rotation = Quaternion.Euler(transform.rotation.x,
                         (Quaternion.LookRotation(tar.transform.position - transform.position)).eulerAngles.y,
                         transform.rotation.z);
-
-                    isAttack = true;
-                    CmdSetAnimTrigger("Attack");
+                    //ÌØÐ§
+                    CmdPlayVFX(1, attackVFXInvokeTime);
+                    //¹¥»÷¶¯»­
+                    CmdSetAnimTrigger("Attack");                    
+                    //¹¥»÷ÒôÐ§
+                    Invoke("PlaySoundAttack", attackSoundInvokeTime);
+                    //¹¥»÷ÉËº¦
                     Invoke("CmdCreatAttackBox", 0.7f);
-                    Invoke("RestisAttack", 1.0f);
+                    //¹¥»÷¼ä¸ô
+                    Invoke("RestisAttack", 1.5f);
                 }
             }
         }
@@ -204,6 +218,36 @@ public class Player : NetworkBehaviour
     public void RpcSetAnimTrigger(string name)
     {
         animatorPlayer.SetTrigger(name);
+    }
+    [Command]
+    public void CmdPlayVFX(int index,float time)
+    {
+        PlayerPlayVFX(index,time);
+        RpcPlayVFX(index,time);
+    }
+    [ClientRpc]
+    public void RpcPlayVFX(int index, float time)
+    {
+        PlayerPlayVFX(index, time);
+    }
+
+    public void PlayerPlayVFX(int index, float time)
+    {
+        switch (index)
+            {
+                case 1:
+                    Invoke("PlayVFX1", time);
+                    break;
+            }
+    }
+    public void PlayVFX1()
+    {
+        attackVFX.Play();
+    }
+
+    public void PlaySoundAttack()
+    {
+        audioSource.PlayOneShot(attackSound);
     }
 
     public void RestisAttack()

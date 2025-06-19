@@ -47,6 +47,9 @@ public class EnemyBase : NetworkBehaviour
     [Header("EnemyResurrection")]
     public float ResurrectionTime = 10.0f;
     private Vector3 resurrectionPosition;
+    [Header("EnemyVFX")]
+    public ParticleSystem attackVFX;
+    public float attackVFXInvokeTime = 0f;
 
     [SyncVar(hook =nameof(HPBarUpdate))]
     public float HPNow;
@@ -165,6 +168,8 @@ public class EnemyBase : NetworkBehaviour
                 (Quaternion.LookRotation(target.transform.position - transform.position)).eulerAngles.y, 
                 transform.rotation.z);
 
+            CmdEnemyVFX(1,attackVFXInvokeTime);
+
             Invoke("CreatAttackBox", AttackDamageTime);
 
             Invoke("RestDoAttack", AttackCoolTime);
@@ -247,12 +252,14 @@ public class EnemyBase : NetworkBehaviour
 
     public virtual void ResurrectionSetTrue()
     {
+        transform.position = resurrectionPosition;
+        DonotChoose(); 
+        HPNow = HP;
+        HPBar.value = HPNow / HP;
         planeAndPosition.SetActive(true);
         enemyModel.SetActive(true);
         characterController.enabled = true;
         agent.enabled = true;
-        HPNow = HP;
-        HPBar.value = HPNow / HP;
     }
 
     public void BeChoose()
@@ -276,14 +283,14 @@ public class EnemyBase : NetworkBehaviour
         HPNow = Mathf.Max(0, HPNow  - Mathf.Max(0, (damage - DEF)));
         HPBarUpdate(0,0);
 
-        if(HPNow<= 0)
-        { SwitchState(EnemyType.Dead);}
-
         if (hitGO.GetComponent<Player>())
         {
             target = hitGO;
             hasTarget = true;
         }
+
+        if (HPNow <= 0)
+        { SwitchState(EnemyType.Dead); }
     }
 
     public virtual void HPBarUpdate(float HPold, float HPnow)
@@ -356,5 +363,32 @@ public class EnemyBase : NetworkBehaviour
     public void RpcResurrectionSetTrue()
     {
         ResurrectionSetTrue();
+    }
+
+    public void CmdEnemyVFX(int index, float time)
+    {
+        EnemyPlayVFX(index, time);
+        RpcEnemyVFX(index, time);
+    }
+    [ClientRpc]
+    public void RpcEnemyVFX(int index, float time)
+    {
+        EnemyPlayVFX(index, time);
+    }
+
+    public void EnemyPlayVFX(int index, float time)
+    {
+        switch (index)
+        {
+            case 1:
+                Invoke("PlayVFX1", time);
+                break;
+        }
+    }
+    public void PlayVFX1()
+    {
+        if( attackVFX != null)
+        { attackVFX.Play();}
+
     }
 }
